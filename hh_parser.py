@@ -1,25 +1,51 @@
 import requests
 import time
+import json
 
 
 class HeadHunter:
     URL = 'https://api.hh.ru/vacancies'
 
-    def __init__(self, search):
-        self.search = search
-        self.params = {'employer_id': f'{self.search}', 'page': 0, 'per_page': 100}
+    def __init__(self, search_keyword):
+        #self.search = search
+        self.params = {'text': f'{search_keyword}',
+                       'page': 0,
+                       'per_page': 100}
 
     def get_request(self):
             response = requests.get(self.URL, self.params)
             if response.status_code == 200:
+
                 return response.json()
+
+    def get_request_company(self):
+        """
+        Парсим компании с ресурса HeadHunter
+        """
+        url = 'https://api.hh.ru/vacancies?text=' + search_keyword
+        company_id = []
+        for item in range(15):
+            request_hh = requests.get(url, params={"keywords": search_keyword}).json()['items']
+            time.sleep(0.5)
+            for item2 in request_hh:
+                if len(company_id) == 15:
+                    break
+                company_id.add(item2['employer']['id'])
+        return company_id
+    def insert(self, path, data):
+        """
+        Запись данных в файл с сохранением структуры и исходных данных
+        """
+        with open(path, 'w', encoding="UTF-8") as file:
+            json.dump(data, file)
 
     @staticmethod
     def get_info(data):
         """Получение кортежа в нужном формате"""
         vacancy_id = int(data.get('id'))
         name = data['name']
-        employer_id = int(data.get('employer').get('id'))
+        employer_id = data.get('employer').get('id')
+        employer_name = data.get('employer').get('name')
         city = data.get('area').get('name')
         url = data.get('alternate_url')
 
@@ -34,7 +60,7 @@ class HeadHunter:
         else:
             salary = None
 
-        vacancy = (vacancy_id, name, employer_id, city, salary, url)
+        vacancy = (vacancy_id, name, employer_id, employer_name, city, salary, url)
         return vacancy
 
     def get_vacancies(self):
@@ -57,4 +83,33 @@ class HeadHunter:
 
             if data.get('pages') == page:
                 break
+        with open('data1.json', 'w', encoding="UTF-8") as file:
+            json.dump(vacancies, file, indent=4, ensure_ascii=False)
         return vacancies
+
+    def get_employers(self, data: list) -> list:
+        """Получает список кортежей из списка словарей"""
+        employers = []
+        for item in data:
+            if int(item['id']) != null and item['name']!= null:
+                employers.append((item['id']))
+
+        return employers
+
+
+
+if __name__ == '__main__':
+    search_keyword = 'Python'
+    hh = HeadHunter(search_keyword)
+    #o = hh.get_request_company()
+    #print(o)
+    k = hh.get_request()
+    print(k)
+    print(type(k))
+    m = hh.get_vacancies()
+    print(type(m))
+    with open('data1.json', 'r', encoding="utf8") as f:
+        data = json.load(f)
+
+    l = hh.get_employers(m)
+

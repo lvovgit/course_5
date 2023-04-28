@@ -7,7 +7,7 @@ class HeadHunter:
     URL = 'https://api.hh.ru/vacancies'
 
     def __init__(self, search_keyword):
-        #self.search = search
+
         self.params = {'text': f'{search_keyword}',
                        'page': 0,
                        'per_page': 100}
@@ -41,7 +41,7 @@ class HeadHunter:
 
     @staticmethod
     def get_info(data):
-        """Получение кортежа в нужном формате"""
+        """Структурирует получаемые из API данн"""
         vacancy_id = int(data.get('id'))
         name = data['name']
         employer_id = data.get('employer').get('id')
@@ -88,7 +88,7 @@ class HeadHunter:
         return vacancies
 
     def get_employers(self, data: list) -> list:
-        """Получает список кортежей из списка словарей"""
+        """Получает список компаний и их id"""
         employers = []
         for item in data:
             if int(item['id']) != null and item['name']!= null:

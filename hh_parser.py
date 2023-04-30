@@ -32,20 +32,37 @@ class HeadHunter:
                     break
                 company_id.add(item2['employer']['id'])
         return company_id
-    def insert(self, path, data):
-        """
-        Запись данных в файл с сохранением структуры и исходных данных
-        """
-        with open(path, 'w', encoding="UTF-8") as file:
-            json.dump(data, file)
+
+    def get_employers(self):
+        """Получает список компаний и их id"""
+        employers = []
+        data = self.get_request()
+        items = data.get('items')
+        for item in items[:15]:
+            if item.get('employer').get('id') != 0 and item.get('employer').get('name') != 0:
+                employers.append((item.get('employer').get('id'),
+                                  item.get('employer').get('name')))
+            unigue_employers = list(set(employers))
+        with open('employers.json', 'w', encoding="UTF-8") as file:
+            json.dump(unigue_employers, file, indent=4, ensure_ascii=False)
+        return unigue_employers
+
 
     @staticmethod
     def get_info(data):
         """Структурирует получаемые из API данн"""
+        # info = {
+        #     'vacancy_id': int(data.get('id')),
+        #     'name': data['name'],
+        #     'employer_id': data.get('employer').get('id'),
+        #     'employer_name': data.get('employer').get('name'),
+        #     'city': data.get('area').get('name'),
+        #     'url': data.get('alternate_url')
+        # }
+
         vacancy_id = int(data.get('id'))
         name = data['name']
         employer_id = data.get('employer').get('id')
-        employer_name = data.get('employer').get('name')
         city = data.get('area').get('name')
         url = data.get('alternate_url')
 
@@ -60,7 +77,7 @@ class HeadHunter:
         else:
             salary = None
 
-        vacancy = (vacancy_id, name, employer_id, employer_name, city, salary, url)
+        vacancy = (vacancy_id, name, employer_id, city, salary, url)
         return vacancy
 
     def get_vacancies(self):
@@ -83,18 +100,12 @@ class HeadHunter:
 
             if data.get('pages') == page:
                 break
-        with open('data1.json', 'w', encoding="UTF-8") as file:
+        with open('vacancies.json', 'w', encoding="UTF-8") as file:
             json.dump(vacancies, file, indent=4, ensure_ascii=False)
+        vacancy_lst = list(vacancies)
         return vacancies
 
-    def get_employers(self, data: list) -> list:
-        """Получает список компаний и их id"""
-        employers = []
-        for item in data:
-            if int(item['id']) != null and item['name']!= null:
-                employers.append((item['id']))
 
-        return employers
 
 
 
@@ -103,13 +114,15 @@ if __name__ == '__main__':
     hh = HeadHunter(search_keyword)
     #o = hh.get_request_company()
     #print(o)
-    k = hh.get_request()
-    print(k)
-    print(type(k))
+    #k = hh.get_request()
+    #print(k)
+    #print(type(k))
     m = hh.get_vacancies()
+    # print(m)
     print(type(m))
-    with open('data1.json', 'r', encoding="utf8") as f:
-        data = json.load(f)
+    #with open('data1.json', 'r', encoding="utf8") as f:
+        #data = json.load(f)
 
-    l = hh.get_employers(m)
+    # l = hh.get_employers()
+    # print(l)
 

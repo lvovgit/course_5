@@ -16,7 +16,7 @@ def main():
     hh = HeadHunter(search_keyword)
     k = hh.get_request()
     print('Добавляем данные')
-    db.insert_data_into_db(k, db2)
+    db.insert_data_into_db(k)
     # employers_from_json = read_json(PATH_2)
     # print('Добавляем данные о работодателях')
     #

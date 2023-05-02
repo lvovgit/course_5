@@ -44,24 +44,28 @@ class DBManager:
                             'salary_max int)')
         conn.close()
 
-    def insert_data_into_db(self, data, db):
-        cur = db.conn.cursor()
-        for item in data['items']:
-            employer = item['employer']
-            cur.execute("""
-                INSERT INTO employers (employer_id, employer_name)
-                VALUES (%s, %s)
-                ON CONFLICT (employer_name) DO NOTHING;
-            """, (employer['id'], employer['name']))
-            db.conn.commit()
+    def insert_data_into_db(self, data):
+        conn = psycopg2.connect(dbname=self.dbname, **self.params)
+        with conn:
+            with conn.cursor() as cur:
+                conn.autocommit = True
+                cur = conn.cursor()
+                for item in data['items']:
+                    employer = item['employer']
+                    cur.execute("""
+                        INSERT INTO employers (employer_id, employer_name)
+                        VALUES (%s, %s)
+                        ON CONFLICT (employer_name) DO NOTHING;
+                    """, (employer['id'], employer['name']))
+                    conn.commit()
 
-            cur.execute("""
-                INSERT INTO vacancies (vacancy_id, vacancy_name, employer_id, city, salary_min, salary_max, url)
-                VALUES (%s, %s, %s, %s, %s)
-                ON CONFLICT (url) DO NOTHING;
-            """, (item['id'], item['name'], employer['id'], employer['address'], item['salary']['from'], item['salary']['to'],
-            item['url']))
-            db.conn.commit()
+                    cur.execute("""
+                        INSERT INTO vacancies (vacancy_id, vacancy_name, employer_id, city, salary_min, salary_max, url)
+                        VALUES (%s, %s, %s, %s, %s)
+                        ON CONFLICT (salary_min, salary_max, url) DO NOTHING;
+                    """, (item['id'], item['name'], employer['id'], item['address'], item['salary']['from'], item['salary']['to'],
+                    item['url']))
+                    conn.commit()
 
     def insert(self, table: str, data: list) -> None:
         """Добавление данных в базу данных в зависимости от таблицы"""

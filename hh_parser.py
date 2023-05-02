@@ -4,7 +4,7 @@ import json
 
 
 class HeadHunter:
-    URL = 'https://api.hh.ru/vacancies'
+    URL = f'https://api.hh.ru/vacancies'
 
     def __init__(self, search_keyword):
 
@@ -15,8 +15,8 @@ class HeadHunter:
     def get_request(self):
             response = requests.get(self.URL, self.params)
             if response.status_code == 200:
-
-                return response.json()
+                data = response.json()
+                return data
 
     def get_request_company(self):
         """
@@ -62,7 +62,7 @@ class HeadHunter:
 
         vacancy_id = int(data.get('id'))
         name = data['name']
-        employer_id = data.get('employer').get('id')
+        employer_id = int(data.get('employer').get('id'))
         city = data.get('area').get('name')
         url = data.get('alternate_url')
 
@@ -114,12 +114,12 @@ if __name__ == '__main__':
     hh = HeadHunter(search_keyword)
     #o = hh.get_request_company()
     #print(o)
-    #k = hh.get_request()
-    #print(k)
+    k = hh.get_request()
+    print(k)
     #print(type(k))
-    m = hh.get_vacancies()
+    #m = hh.get_vacancies()
     # print(m)
-    print(type(m))
+    #print(type(m))
     #with open('data1.json', 'r', encoding="utf8") as f:
         #data = json.load(f)
 

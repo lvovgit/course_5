@@ -40,8 +40,9 @@ class DBManager:
                             'vacancy_name varchar(255) NOT NULL, '
                             'employer_id int REFERENCES employers(employer_id) NOT NULL, '
                             'city varchar(255), '
-                            'url text, '
-                            'salary_max int)')
+                            'salary_min int,'
+                            'salary_max int,'
+                            'url text)')
         conn.close()
 
     def insert_data_into_db(self, data):
@@ -55,16 +56,25 @@ class DBManager:
                     cur.execute("""
                         INSERT INTO employers (employer_id, employer_name)
                         VALUES (%s, %s)
-                        ON CONFLICT (employer_name) DO NOTHING;
+                        ON CONFLICT (employer_id) DO NOTHING;
                     """, (employer['id'], employer['name']))
                     conn.commit()
 
+                    if 'salary' in data.keys():
+                        if data.get('salary') is not None:
+                            if 'from' in data.get('salary'):
+                                salary = data.get('salary').get('from')
+                            else:
+                                salary = None
+                        else:
+                            salary = None
+                    else:
+                        salary = None
                     cur.execute("""
                         INSERT INTO vacancies (vacancy_id, vacancy_name, employer_id, city, salary_min, salary_max, url)
-                        VALUES (%s, %s, %s, %s, %s)
-                        ON CONFLICT (salary_min, salary_max, url) DO NOTHING;
-                    """, (item['id'], item['name'], employer['id'], item['address'], item['salary']['from'], item['salary']['to'],
-                    item['url']))
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (vacancy_id) DO NOTHING;
+                    """, (item['id'], item['name'], employer['id'], item['address'], salary, salary, item['url']))
                     conn.commit()
 
     def insert(self, table: str, data: list) -> None:
